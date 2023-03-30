@@ -9,6 +9,7 @@ import GUI
 import Montecarlosearch as mcs
 import Neuralnetwork as nnn
 import Trainingdatavis as tdv
+import time
 
 
 def softmax(nums):
@@ -37,7 +38,7 @@ def train():
     """
     global network
     epochs = 10  # int(input("Epochs: "))
-    evals = 4  # int(input("Evals per move: "))
+    evals = 1  # int(input("Evals per move: "))
     alpha = 2  # float(input("Alpha: "))
     loss = 0.99  # float(input("Loss value: "))
     gameboard = GUI.board()
@@ -124,10 +125,11 @@ def train():
         network.updatelayers(updatestotal, result)
         print("player one has won: ", player1wins)
         print("player two has won: ", player2wins)
-        with open("network.bin", "wb") as f:
-            dill.dump(network, f)
-        with open("datavis.bin", "wb") as f:
-            pickle.dump(datavis, f)
+        if epoch % 10 == 0:
+            with open("network.bin", "wb") as f:
+                dill.dump(network, f)
+            with open("datavis.bin", "wb") as f:
+                pickle.dump(datavis, f)
 
 
 def evalposition(moves):
@@ -161,4 +163,7 @@ def evalposition(moves):
     return eval, vals, is_end
 
 
-train()
+if __name__ == '__main__':
+    start_time = time.time()
+    train()
+    print(f"Took {time.time() - start_time} seconds")

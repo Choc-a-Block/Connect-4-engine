@@ -1,5 +1,6 @@
 import math
 import random
+import numpy as np
 
 sigmoid = lambda x: 1 / (1 + math.exp(-x))
 sigmoidder = lambda x: (math.exp(x)) / ((1 + math.exp(x)) ** 2)
@@ -22,15 +23,16 @@ class layer:
         self.weights = [[random.random() / 5 - 1 / 10 for _ in range(inputam)] for _ in range(outputam)]
         self.biases = [random.random() / 5 - 1 / 10 for _ in range(outputam)]
         self.input = []
-        self.outputs = [0 for _ in range(len(self.biases))]
-        self.prevouts = [0 for _ in range(len(self.biases))]
-        self.previns = [0 for _ in range(inputam)]
+        self.outputs = [0 for i in range(len(self.biases))]
+        self.prevouts = [0 for i in range(len(self.biases))]
+        self.previns = [0 for i in range(inputam)]
         self.updatesw = [[0 for _ in range(inputam)] for _ in range(outputam)]
         self.updatesb = [0 for _ in range(outputam)]
+        self.newcontribution = [0 for i in range(len(self.weights[0]))]
 
     def forwardpass(self, inputs):
         self.previns = inputs
-        self.outputs = [0 for _ in range(len(self.biases))]
+        self.outputs = [0 for i in range(len(self.biases))]
         for outindex, outputw in enumerate(self.weights):
             for inindex, weight in enumerate(outputw):
                 self.outputs[outindex] += inputs[inindex] * weight
@@ -40,16 +42,17 @@ class layer:
         return self.outputs
 
     def calcupdate(self, contribution, alpha):
-        newcontribution = [0 for _ in range(len(self.weights[0]))]
+        for i in range(len(self.newcontribution)):
+            self.newcontribution[i] = 0
         for outindex in range(len(self.weights)):
             grad = self.derivative(self.prevouts[outindex])
             for inindex in range(len(self.weights[outindex])):
                 self.updatesw[outindex][inindex] = grad * self.weights[outindex][inindex] * self.previns[
                     inindex] * alpha * contribution[outindex]
-                newcontribution[inindex] = grad * self.weights[outindex][inindex] * self.previns[inindex] * \
-                                           contribution[outindex]
+                self.newcontribution[inindex] = grad * self.weights[outindex][inindex] * self.previns[inindex] * \
+                                                contribution[outindex]
             self.updatesb[outindex] = grad * self.biases[outindex] * alpha * contribution[outindex]
-        return newcontribution
+        return self.newcontribution
 
     def updatevalues(self, updatesw, updatesb):
         for i in range(len(self.weights)):
